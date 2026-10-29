@@ -26,6 +26,27 @@ def create_custom_fields():
 			"Company": [BRANCH_FIELD],
 			"Customer": [BRANCH_FIELD],
 			"Supplier": [BRANCH_FIELD],
+			"Employee": [
+				{
+					"fieldname": "thai_tax_id",
+					"label": "Thai Tax ID (เลขประจำตัวผู้เสียภาษี)",
+					"fieldtype": "Data",
+					"length": 13,
+					"insert_after": "passport_number",
+					"description": "13-digit national ID number. Needed for ภ.ง.ด.1, ภ.ง.ด.1ก and the year-end 50 ทวิ.",
+				}
+			],
+			"Salary Component": [
+				{
+					"fieldname": "thai_fund_type",
+					"label": "Thai Fund Type",
+					"fieldtype": "Select",
+					"options": "\nSocial Security\nProvident Fund",
+					"insert_after": "is_income_tax_component",
+					"depends_on": "eval:doc.type == 'Deduction'",
+					"description": "Totals of these deductions are printed on the employee's year-end 50 ทวิ. Mark the income tax deduction with Is Income Tax Component.",
+				}
+			],
 			"Tax Withholding Category": [
 				{
 					"fieldname": "thai_income_category",
