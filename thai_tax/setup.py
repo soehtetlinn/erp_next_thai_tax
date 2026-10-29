@@ -79,7 +79,9 @@ def create_custom_fields():
 	)
 
 
-# Thai tax entries for ERPNext's Accounts sidebar, placed in its Taxes section
+# Thai tax entries for ERPNext's Accounts sidebar: their own "Thai Tax" section, right below Taxes.
+# (The v16 sidebar has one level of sections, so it cannot sit inside Taxes itself.)
+SIDEBAR_SECTION = "Thai Tax"
 SIDEBAR_ITEMS = [
 	("ใบ 50 ทวิ (WHT Certificate)", "DocType", "Thai WHT Certificate"),
 	("ภ.ง.ด.3 / ภ.ง.ด.53", "Report", "Thai PND Attachment"),
@@ -94,32 +96,54 @@ def after_migrate():
 
 
 def add_to_accounts_sidebar():
-	"""Add the Thai tax forms under Taxes in the Accounts sidebar, after Tax Withholding Category.
+	"""Give the Thai tax forms a "Thai Tax" section in the Accounts sidebar, right below Taxes.
 
 	The Accounts sidebar is ERPNext's own and is reloaded from its files on every update, so the
-	items go into the site's layer over it (a Custom Sidebar), the place Frappe keeps a site's
-	changes to an app's sidebar. Items already there, or removed by someone afterwards and then
-	re-added, are not duplicated.
+	section goes into the site's layer over it (a Custom Sidebar), the place Frappe keeps a site's
+	changes to an app's sidebar. When the section is already in place nothing is written; Thai
+	items found anywhere else (such as inside Taxes, where earlier versions put them) are moved.
 	"""
 	from frappe.desk.doctype.custom_sidebar.custom_sidebar import _save_customization, layer_arrangement
 
 	if not frappe.db.exists("Module Def", "Accounts"):
 		return
 	rows = layer_arrangement("Accounts", None)
-	present = {row.get("link_to") for row in rows}
-	missing = [item for item in SIDEBAR_ITEMS if item[2] not in present]
-	if not missing:
-		return
+	ours = {link_to for _, _, link_to in SIDEBAR_ITEMS}
 
-	anchor = next(
-		(i for i, row in enumerate(rows) if row.get("link_to") == "Tax Withholding Category"),
-		next((i for i, row in enumerate(rows) if row.get("label") == "Taxes"), len(rows) - 1),
-	)
-	added = [
+	def is_ours(row):
+		is_section = row.get("type") == "Section Break" and row.get("label") == SIDEBAR_SECTION
+		return is_section or row.get("link_to") in ours
+
+	block = [
+		{
+			"added": 1,
+			"type": "Section Break",
+			"label": SIDEBAR_SECTION,
+			"icon": "receipt",
+			"collapsible": 1,
+			"indent": 1,
+			"keep_closed": 1,
+		}
+	] + [
 		{"added": 1, "type": "Link", "label": label, "link_type": link_type, "link_to": link_to, "child": 1}
-		for label, link_type, link_to in missing
+		for label, link_type, link_to in SIDEBAR_ITEMS
 	]
-	_save_customization("Accounts", rows[: anchor + 1] + added + rows[anchor + 1 :], user=None)
+
+	others = [row for row in rows if not is_ours(row)]
+	# after the Taxes section and its entries, or at the end if this site has no Taxes section
+	position = len(others)
+	taxes = next((i for i, row in enumerate(others) if row.get("type") == "Section Break" and row.get("label") == "Taxes"), None)
+	if taxes is not None:
+		position = taxes + 1
+		while position < len(others) and others[position].get("child") and others[position].get("type") != "Section Break":
+			position += 1
+
+	current = [(row.get("type"), row.get("label"), row.get("link_to")) for row in rows if is_ours(row)]
+	wanted = [(row["type"], row["label"], row.get("link_to")) for row in block]
+	in_place = current == wanted and rows[position : position + len(block)] and is_ours(rows[position])
+	if in_place:
+		return
+	_save_customization("Accounts", others[:position] + block + others[position:], user=None)
 
 
 def setup_company(company: str):
