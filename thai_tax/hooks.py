@@ -293,7 +293,7 @@ jinja = {
 }
 
 after_install = "thai_tax.setup.after_install"
-after_migrate = "thai_tax.setup.create_custom_fields"
+after_migrate = "thai_tax.setup.after_migrate"
 
 # 50 Tawi certificates from purchases and payments that withhold tax (see wht.py)
 doc_events = {

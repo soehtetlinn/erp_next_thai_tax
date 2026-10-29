@@ -16,6 +16,7 @@ BRANCH_FIELD = {
 
 def after_install():
 	create_custom_fields()
+	add_to_accounts_sidebar()
 	for company in frappe.get_all("Company", filters={"country": "Thailand"}, pluck="name"):
 		setup_company(company)
 
@@ -76,6 +77,49 @@ def create_custom_fields():
 		},
 		validate_fields_for_doctype=False,
 	)
+
+
+# Thai tax entries for ERPNext's Accounts sidebar, placed in its Taxes section
+SIDEBAR_ITEMS = [
+	("ใบ 50 ทวิ (WHT Certificate)", "DocType", "Thai WHT Certificate"),
+	("ภ.ง.ด.3 / ภ.ง.ด.53", "Report", "Thai PND Attachment"),
+	("ภ.ง.ด.1", "Report", "Thai PND 1"),
+	("ภ.ง.ด.1ก", "Report", "Thai PND 1 Kor"),
+]
+
+
+def after_migrate():
+	create_custom_fields()
+	add_to_accounts_sidebar()
+
+
+def add_to_accounts_sidebar():
+	"""Add the Thai tax forms under Taxes in the Accounts sidebar, after Tax Withholding Category.
+
+	The Accounts sidebar is ERPNext's own and is reloaded from its files on every update, so the
+	items go into the site's layer over it (a Custom Sidebar), the place Frappe keeps a site's
+	changes to an app's sidebar. Items already there, or removed by someone afterwards and then
+	re-added, are not duplicated.
+	"""
+	from frappe.desk.doctype.custom_sidebar.custom_sidebar import _save_customization, layer_arrangement
+
+	if not frappe.db.exists("Module Def", "Accounts"):
+		return
+	rows = layer_arrangement("Accounts", None)
+	present = {row.get("link_to") for row in rows}
+	missing = [item for item in SIDEBAR_ITEMS if item[2] not in present]
+	if not missing:
+		return
+
+	anchor = next(
+		(i for i, row in enumerate(rows) if row.get("link_to") == "Tax Withholding Category"),
+		next((i for i, row in enumerate(rows) if row.get("label") == "Taxes"), len(rows) - 1),
+	)
+	added = [
+		{"added": 1, "type": "Link", "label": label, "link_type": link_type, "link_to": link_to, "child": 1}
+		for label, link_type, link_to in missing
+	]
+	_save_customization("Accounts", rows[: anchor + 1] + added + rows[anchor + 1 :], user=None)
 
 
 def setup_company(company: str):
