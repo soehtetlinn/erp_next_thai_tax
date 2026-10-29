@@ -22,6 +22,11 @@ frappe.query_reports["Thai PND 1 Kor"] = {
 	],
 
 	onload(report) {
+		report.page.add_inner_button(__("Print Official Form"), () => {
+			const { company, year } = report.get_values();
+			const args = new URLSearchParams({ form: "PND1K", company, year });
+			window.open(frappe.urllib.get_full_url("/api/method/thai_tax.pnd_print.download?" + args.toString()));
+		});
 		report.page.add_inner_button(__("Create Employee 50 Tawi"), () => {
 			const { company, year } = report.get_values();
 			frappe.call({

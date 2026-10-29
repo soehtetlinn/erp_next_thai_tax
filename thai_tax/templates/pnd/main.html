@@ -1,0 +1,120 @@
+{% from "thai_tax/templates/pnd/_common.html" import digits, check, money with context %}
+{% include "thai_tax/templates/pnd/_common.html" %}
+<style>.page { font-size: 10.5px; } .grid th, .grid td { padding: 2px 5px; }</style>
+{% set monthly = form != "PND1K" %}
+{% set salary = form in ("PND1", "PND1K") %}
+{% set sheet_count = sheets | length %}
+
+<div class="page">
+	<table>
+		<tr>
+			<td style="width: 18%; vertical-align: top"><span class="code">{{ spec.code }}</span></td>
+			<td class="center" style="vertical-align: top">
+				<div class="title">{{ spec.title }}</div>
+				<div>{{ spec.law }}</div>
+				<div class="muted">สำหรับการจ่ายเงินได้พึงประเมินให้แก่{{ spec.payees }}</div>
+			</td>
+		</tr>
+	</table>
+
+	<table style="margin-top: 6px">
+		<tr>
+			<td class="box" style="width: 62%; vertical-align: top">
+				เลขประจำตัวผู้เสียภาษีอากร (ของผู้มีหน้าที่หักภาษี ณ ที่จ่าย)<br>
+				{{ digits(company_tax_id, [1, 4, 5, 2, 1]) }} &nbsp; สาขาที่ {{ digits(company_branch, [5]) }}
+				<div style="margin-top: 5px">ชื่อผู้มีหน้าที่หักภาษี ณ ที่จ่าย (หน่วยงาน) : <b>{{ company }}</b></div>
+				<div>ที่อยู่ : {{ company_address }}</div>
+				<div>โทรศัพท์ : {{ company_phone or ".................." }}</div>
+			</td>
+			<td class="box" style="vertical-align: top">
+				{% if monthly %}
+				<b>เดือนที่จ่ายเงินได้พึงประเมิน</b> พ.ศ. <b>{{ year_be }}</b>
+				<table style="margin-top: 3px">
+					{% for row in [[1, 4, 7, 10], [2, 5, 8, 11], [3, 6, 9, 12]] %}
+					<tr>{% for m in row %}<td style="padding: 1px 2px">{{ check(m == month) }}{{ ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."][m - 1] }}</td>{% endfor %}</tr>
+					{% endfor %}
+				</table>
+				{% else %}
+				<b>ปีภาษี</b> พ.ศ. <b>{{ year_be }}</b>
+				{% endif %}
+				<div style="margin-top: 5px">
+					{{ check(not additional) }} ยื่นปกติ &nbsp;&nbsp;
+					{{ check(additional) }} ยื่นเพิ่มเติมครั้งที่ {{ additional or "...." }}
+				</div>
+			</td>
+		</tr>
+	</table>
+
+	<div class="box" style="margin-top: 6px">
+		มีรายละเอียดการหักเป็นรายผู้มีเงินได้ ปรากฏตาม<br>
+		{{ check(True) }} ใบแนบ {{ spec.code }} ที่แนบมาพร้อมนี้ : จำนวน <b>{{ payee_count }}</b> ราย จำนวน <b>{{ sheet_count }}</b> แผ่น
+		&nbsp;&nbsp; หรือ &nbsp; {{ check(False) }} สื่อบันทึกในระบบคอมพิวเตอร์ ............ ราย ............ แผ่น
+	</div>
+
+	{% if salary %}
+	<table class="grid" style="margin-top: 6px">
+		<tr><th>สรุปรายการภาษีที่นำส่ง</th><th style="width: 10%">จำนวนราย</th><th style="width: 18%">เงินได้ทั้งสิ้น</th><th style="width: 18%">ภาษีที่นำส่งทั้งสิ้น</th></tr>
+		{% set categories = [
+			"1. เงินได้ตามมาตรา 40 (1) เงินเดือน ค่าจ้าง ฯลฯ กรณีทั่วไป",
+			"2. เงินได้ตามมาตรา 40 (1) เงินเดือน ค่าจ้าง ฯลฯ กรณีได้รับอนุมัติจากกรมสรรพากรให้หักอัตราร้อยละ 3",
+			"3. เงินได้ตามมาตรา 40 (1) (2) กรณีนายจ้างจ่ายให้ครั้งเดียวเพราะเหตุออกจากงาน",
+			"4. เงินได้ตามมาตรา 40 (2) กรณีผู้รับเงินได้เป็นผู้อยู่ในประเทศไทย",
+			"5. เงินได้ตามมาตรา 40 (2) กรณีผู้รับเงินได้มิได้เป็นผู้อยู่ในประเทศไทย",
+		] %}
+		{% for label in categories %}
+		<tr>
+			<td>{{ label }}</td>
+			<td class="num">{{ payee_count if loop.first else "" }}</td>
+			<td class="num">{{ money(total_amount) if loop.first else "" }}</td>
+			<td class="num">{{ money(total_tax) if loop.first else "" }}</td>
+		</tr>
+		{% endfor %}
+		<tr><td class="num"><b>6. รวม</b></td><td class="num"><b>{{ payee_count }}</b></td><td class="num"><b>{{ money(total_amount) }}</b></td><td class="num"><b>{{ money(total_tax) }}</b></td></tr>
+		{% if monthly %}
+		<tr><td class="num">7. เงินเพิ่ม (ถ้ามี)</td><td></td><td></td><td class="num"></td></tr>
+		<tr><td class="num"><b>8. รวมยอดภาษีที่นำส่งทั้งสิ้น และเงินเพิ่ม (6. + 7.)</b></td><td></td><td></td><td class="num"><b>{{ money(total_tax) }}</b></td></tr>
+		{% endif %}
+	</table>
+	{% else %}
+	<table class="grid" style="margin-top: 6px">
+		<tr><th>สรุปรายการภาษีที่นำส่ง</th><th style="width: 26%">จำนวนเงิน</th></tr>
+		<tr><td>1. รวมยอดเงินได้ทั้งสิ้น</td><td class="num">{{ money(total_amount) }}</td></tr>
+		<tr><td>2. รวมยอดภาษีที่นำส่งทั้งสิ้น</td><td class="num">{{ money(total_tax) }}</td></tr>
+		<tr><td>3. เงินเพิ่ม (ถ้ามี)</td><td class="num"></td></tr>
+		<tr><td><b>4. รวมยอดภาษีที่นำส่งทั้งสิ้น และเงินเพิ่ม (2. + 3.)</b></td><td class="num"><b>{{ money(total_tax) }}</b></td></tr>
+	</table>
+	{% endif %}
+	<div style="margin-top: 3px"><b>({{ bahttext(total_tax) }})</b></div>
+
+	<table style="margin-top: 8px">
+		<tr>
+			<td class="box" style="width: 64%">
+				ข้าพเจ้าขอรับรองว่า รายการที่แจ้งไว้ข้างต้นนี้ เป็นรายการที่ถูกต้องและครบถ้วนทุกประการ
+				<div class="sign" style="margin-top: 14px">
+					ลงชื่อ <span class="dots" style="min-width: 200px"></span> ผู้จ่ายเงิน<br>
+					( <span class="dots" style="min-width: 190px"></span> )<br>
+					ตำแหน่ง <span class="dots" style="min-width: 180px"></span><br>
+					ยื่นวันที่ {{ thai_date(filed_on) }}
+				</div>
+			</td>
+			<td style="vertical-align: middle; text-align: center">
+				<div style="width: 80px; height: 80px; border: 1px dashed #777; border-radius: 50%; margin: 0 auto; line-height: 80px; color: #777">ประทับตรา<br></div>
+				<div class="muted">(ถ้ามี)</div>
+			</td>
+		</tr>
+	</table>
+
+	<div class="box" style="margin-top: 6px">
+		<b>สำหรับบันทึกของเจ้าหน้าที่</b><br>
+		<span class="muted">วันที่รับ ................................. ผู้รับ ................................. เลขที่ .................................</span>
+	</div>
+
+	<div class="muted" style="margin-top: 4px">
+		{% if monthly %}
+		กำหนดยื่น: ภายใน 7 วันนับแต่วันสิ้นเดือนของเดือนที่จ่ายเงินได้ (ยื่นทางอินเทอร์เน็ตได้ถึงวันที่ 15 ของเดือนถัดไป)
+		{% else %}
+		กำหนดยื่น: ภายในเดือนกุมภาพันธ์ของปีถัดจากปีภาษี
+		{% endif %}
+		· จัดทำจากระบบ ERPNext ({{ company }})
+	</div>
+</div>

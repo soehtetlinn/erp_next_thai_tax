@@ -39,4 +39,13 @@ frappe.query_reports["Thai PND Attachment"] = {
 			reqd: 1,
 		},
 	],
+
+	onload(report) {
+		report.page.add_inner_button(__("Print Official Form"), () => {
+			const values = report.get_values();
+			if (!values) return;
+			const args = new URLSearchParams({ form: values.pnd_form === "ภ.ง.ด.3" ? "PND3" : "PND53", company: values.company, year: values.year, month: values.month });
+			window.open(frappe.urllib.get_full_url("/api/method/thai_tax.pnd_print.download?" + args.toString()));
+		});
+	},
 };

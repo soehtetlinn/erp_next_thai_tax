@@ -1,0 +1,111 @@
+{% from "thai_tax/templates/pnd/_common.html" import digits, check, money with context %}
+{% include "thai_tax/templates/pnd/_common.html" %}
+{% set salary = form in ("PND1", "PND1K") %}
+{% set yearly = form == "PND1K" %}
+{% set juristic = form == "PND53" %}
+
+{% for sheet in sheets %}
+<div class="page">
+	<table>
+		<tr>
+			<td style="width: 16%"><span class="code" style="font-size: 18px">ใบแนบ {{ spec.code }}</span></td>
+			<td>
+				เลขประจำตัวผู้เสียภาษีอากร (ของผู้มีหน้าที่หักภาษี ณ ที่จ่าย)
+				<span style="white-space: nowrap">{{ digits(company_tax_id, [1, 4, 5, 2, 1]) }} &nbsp; สาขาที่ {{ digits(company_branch, [5]) }}</span>
+				<div class="muted">{{ company }} · {% if yearly %}ปีภาษี {{ year_be }}{% else %}เดือน{{ month_name }} {{ year_be }}{% endif %}</div>
+			</td>
+			<td class="num" style="width: 16%">แผ่นที่ <b>{{ loop.index }}</b> ในจำนวน <b>{{ sheets | length }}</b> แผ่น</td>
+		</tr>
+	</table>
+
+	{% if salary %}
+	<div style="margin: 4px 0">
+		ประเภทเงินได้ : {{ check(True) }} (1) เงินได้ตามมาตรา 40 (1) เงินเดือน ค่าจ้าง ฯลฯ กรณีทั่วไป &nbsp;
+		{{ check(False) }} (2) ... กรณีได้รับอนุมัติฯ ให้หักร้อยละ 3 &nbsp; {{ check(False) }} (3) ... กรณีจ่ายครั้งเดียวเพราะเหตุออกจากงาน &nbsp;
+		{{ check(False) }} (4) 40 (2) ผู้อยู่ในประเทศไทย &nbsp; {{ check(False) }} (5) 40 (2) มิได้อยู่ในประเทศไทย
+	</div>
+	{% endif %}
+
+	<table class="grid" style="margin-top: 4px">
+		<thead>
+			{% if salary %}
+			<tr>
+				<th style="width: 5%">ลำดับที่</th>
+				<th style="width: 15%">เลขประจำตัวผู้เสียภาษีอากร<br>(ของผู้มีเงินได้)</th>
+				<th>ชื่อผู้มีเงินได้{% if yearly %} / ที่อยู่ของผู้มีเงินได้{% endif %}</th>
+				{% if not yearly %}<th style="width: 11%">วัน เดือน ปี<br>ที่จ่าย</th>{% endif %}
+				<th style="width: 14%">จำนวนเงินได้{{ "ทั้งปี" if yearly else "ที่จ่ายในครั้งนี้" }}</th>
+				<th style="width: 14%">จำนวนเงินภาษีที่หัก<br>และนำส่ง{{ "ทั้งปี" if yearly else "ในครั้งนี้" }}</th>
+				<th style="width: 6%">เงื่อนไข</th>
+			</tr>
+			{% else %}
+			<tr>
+				<th rowspan="2" style="width: 4%">ลำดับที่</th>
+				<th rowspan="2" style="width: 15%">เลขประจำตัวผู้เสียภาษีอากร<br>(ของผู้มีเงินได้){% if juristic %}<br>/ สาขาที่{% endif %}</th>
+				<th rowspan="2">ชื่อและที่อยู่ของผู้มีเงินได้{% if juristic %}<br><span class="muted">(ระบุให้ชัดเจนว่าเป็น บริษัท จำกัด / ห้างหุ้นส่วน ฯลฯ)</span>{% endif %}</th>
+				<th colspan="6">รายละเอียดเกี่ยวกับการจ่ายเงิน</th>
+			</tr>
+			<tr>
+				<th style="width: 9%">วัน เดือน ปี<br>ที่จ่าย</th>
+				<th style="width: 12%">ประเภทเงินได้พึงประเมิน<br>ที่จ่าย</th>
+				<th style="width: 6%">อัตราภาษี<br>ร้อยละ</th>
+				<th style="width: 11%">จำนวนเงินที่จ่าย<br>ในครั้งนี้</th>
+				<th style="width: 11%">จำนวนเงินภาษีที่หัก<br>และนำส่งในครั้งนี้</th>
+				<th style="width: 5%">เงื่อนไข</th>
+			</tr>
+			{% endif %}
+		</thead>
+		<tbody>
+			{% for payee in sheet.payees %}
+			{% for line in payee.lines %}
+			<tr>
+				{% if loop.first %}
+				<td class="center" rowspan="{{ payee.lines | length }}">{{ payee.sequence }}</td>
+				<td class="center" style="white-space: nowrap" rowspan="{{ payee.lines | length }}">
+					{{ format_tax_id(payee.tax_id) }}{% if juristic %}<br><span class="muted">สาขาที่ {{ payee.branch or "00000" }}</span>{% endif %}
+				</td>
+				<td rowspan="{{ payee.lines | length }}">
+					<b>{{ payee.name }}</b>
+					{% if payee.address and (not salary or yearly) %}<br><span class="muted">{{ payee.address | replace("<br>", " ") | striptags }}</span>{% endif %}
+				</td>
+				{% endif %}
+				{% if not yearly %}<td class="center">{{ line.date }}</td>{% endif %}
+				{% if not salary %}
+				<td>{{ line.income }}</td>
+				<td class="center">{{ line.rate | round(2) if line.rate else "" }}</td>
+				{% endif %}
+				<td class="num">{{ money(line.amount) }}</td>
+				<td class="num">{{ money(line.tax) }}</td>
+				<td class="center">{{ line.condition }}</td>
+			</tr>
+			{% endfor %}
+			{% endfor %}
+			{% for _ in range(sheet.blank_rows) %}
+			<tr style="height: 26px"><td></td><td></td><td></td>{% if not yearly %}<td></td>{% endif %}{% if not salary %}<td></td><td></td>{% endif %}<td></td><td></td><td></td></tr>
+			{% endfor %}
+			<tr>
+				<td colspan="{{ 3 + (0 if yearly else 1) + (0 if salary else 2) }}" class="num">
+					<b>รวมยอดเงินได้และภาษีที่นำส่ง</b> <span class="muted">(นำไปรวมกับใบแนบ {{ spec.code }} แผ่นอื่น (ถ้ามี))</span>
+				</td>
+				<td class="num"><b>{{ money(sheet.amount) }}</b></td>
+				<td class="num"><b>{{ money(sheet.tax) }}</b></td>
+				<td></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<table style="margin-top: 8px">
+		<tr>
+			<td class="muted" style="width: 55%; vertical-align: top">
+				(ให้กรอกลำดับที่ต่อเนื่องกันไปทุกแผ่น)<br>
+				<b>เงื่อนไข</b> ให้กรอกดังนี้ : หัก ณ ที่จ่าย กรอก 1 · ออกให้ตลอดไป กรอก 2 · ออกให้ครั้งเดียว กรอก 3
+			</td>
+			<td class="sign">
+				ลงชื่อ <span class="dots" style="min-width: 180px"></span> ผู้จ่ายเงิน<br>
+				( <span class="dots" style="min-width: 170px"></span> )<br>
+				ตำแหน่ง <span class="dots" style="min-width: 150px"></span> &nbsp; ยื่นวันที่ {{ thai_date(filed_on) }}
+			</td>
+		</tr>
+	</table>
+</div>
+{% endfor %}

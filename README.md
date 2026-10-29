@@ -20,6 +20,7 @@ bench --site <site> install-app thai_tax
 | **Thai PND Attachment** report: ใบแนบ ภ.ง.ด.3 / ภ.ง.ด.53 for a month, with totals to remit; export to Excel for RD Prep / e-Filing | Reports |
 | **Thai PND 1** report: ใบแนบ ภ.ง.ด.1, salary income (มาตรา 40 (1)) and tax for a month, from submitted Salary Slips | Reports |
 | **Thai PND 1 Kor** report: ใบแนบ ภ.ง.ด.1ก, each employee's income, tax, social security and provident fund for the year, with a **Create Employee 50 Tawi** button that makes each employee's year-end certificate (as drafts, run again safely) | Reports |
+| **Print Official Form** button on the three reports: the main ภ.ง.ด.3 / ภ.ง.ด.53 / ภ.ง.ด.1 / ภ.ง.ด.1ก form (portrait) with its attachment sheets (ใบแนบ, landscape, numbered "แผ่นที่ x ในจำนวน y"), as one PDF | Reports |
 | **Thai Tax ID** on Employee and **Thai Fund Type** (Social Security / Provident Fund) on salary deduction components | Employee, Salary Component |
 
 Thai text in PDFs uses the bundled **Sarabun** font (SIL Open Font License, `public/fonts/OFL.txt`),
