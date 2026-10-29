@@ -1,33 +1,48 @@
 ### Thai Tax
 
-Thai tax invoice, withholding tax (50 Tawi, PND 3, PND 53) for ERPNext
-
-### Installation
-
-You can install this app using the [bench](https://github.com/frappe/bench) CLI:
+Thai tax documents for ERPNext v16: full tax invoice, withholding tax certificates (50 ทวิ) and
+the monthly ภ.ง.ด.3 / ภ.ง.ด.53 attachment.
 
 ```bash
-cd $PATH_TO_YOUR_BENCH
-bench get-app $URL_OF_THIS_REPO --branch version-16
-bench install-app thai_tax
+bench get-app <repo-url> --branch version-16
+bench --site <site> install-app thai_tax
 ```
 
-### Contributing
+#### What it adds
 
-This app uses `pre-commit` for code formatting and linting. Please [install pre-commit](https://pre-commit.com/#installation) and enable it for this repository:
+| Feature | Where |
+|---|---|
+| **Branch code** (สำนักงานใหญ่ = 00000 / สาขาที่) on Company, Customer and Supplier | the Tax ID section of each |
+| **Thai Tax Invoice** print format: ใบกำกับภาษี with seller/buyer tax ID and branch, VAT, amount in Thai words, Buddhist Era dates | Sales Invoice → Print |
+| **Withholding categories** for common payments: services, hire of work and professional fees 3%, rent 5%, advertising 2%, transport 1%, commission 3% (base excludes VAT, 1,000 baht threshold), and the account ภาษีเงินได้หัก ณ ที่จ่ายค้างจ่าย | Tax Withholding Category |
+| **Thai WHT Certificate** (50 ทวิ), created automatically when a Purchase Invoice or Payment Entry that withholds tax is submitted, and cancelled with it. ภ.ง.ด.3 for suppliers of type Individual, ภ.ง.ด.53 otherwise | Thai WHT Certificate |
+| **50 Tawi** print format: two copies (ฉบับที่ 1 for the payee's return, ฉบับที่ 2 for their records), per Director-General Announcement No. 100 | Thai WHT Certificate → Print |
+| **Thai PND Attachment** report: ใบแนบ ภ.ง.ด.3 / ภ.ง.ด.53 for a month, with totals to remit; export to Excel for RD Prep / e-Filing | Reports |
 
-```bash
-cd apps/thai_tax
-pre-commit install
-```
+Thai text in PDFs uses the bundled **Sarabun** font (SIL Open Font License, `public/fonts/OFL.txt`),
+so the server needs no Thai fonts installed. The PDF engine loads it from the site URL, so the
+site's `host_name` must be reachable from the server itself.
 
-Pre-commit is configured to use the following tools for checking and formatting your code:
+#### Setting up
 
-- ruff
-- eslint
-- prettier
-- pyupgrade
+1. Company: Tax ID and branch code; a company address (shown on invoices and 50 ทวิ).
+2. Suppliers you withhold from: Tax ID (13 digits), branch code, **Supplier Type** (Individual →
+   ภ.ง.ด.3), and their **Tax Withholding Category**.
+3. Purchase Invoice or Payment Entry: tick **Apply Tax Withholding Amount**. Submitting it creates
+   the 50 ทวิ.
+4. Each month (due the 7th, or the 15th when filed online): run **Thai PND Attachment** for
+   ภ.ง.ด.3 and ภ.ง.ด.53 for the previous month and file the totals.
 
-### License
+#### Not covered yet
+
+- ภ.ง.ด.1 / ภ.ง.ด.1ก (salaries, from payroll) and the employee year-end 50 ทวิ
+- The RD Prep / e-Filing import file format (the report exports to Excel)
+- ภ.พ.30 (monthly VAT return) and the input/output VAT reports
+
+Rates, thresholds and layouts follow Revenue Department rules as researched in October 2026
+(order ท.ป.4/2528, Announcement No. 100, Revenue Code sections 50 ทวิ and 86/4). Have your
+accountant review them before filing.
+
+#### License
 
 mit

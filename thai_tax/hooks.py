@@ -277,3 +277,26 @@ app_license = "mit"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
+
+# Thai tax
+# ------------------
+jinja = {
+	"methods": [
+		"thai_tax.utils.bahttext",
+		"thai_tax.utils.thai_date",
+		"thai_tax.utils.thai_month",
+		"thai_tax.utils.branch_label",
+		"thai_tax.utils.format_tax_id",
+		"thai_tax.utils.font_css",
+		"thai_tax.utils.company_address",
+	]
+}
+
+after_install = "thai_tax.setup.after_install"
+after_migrate = "thai_tax.setup.create_custom_fields"
+
+# 50 Tawi certificates from purchases and payments that withhold tax (see wht.py)
+doc_events = {
+	"Purchase Invoice": {"on_submit": "thai_tax.wht.on_submit", "on_cancel": "thai_tax.wht.on_cancel"},
+	"Payment Entry": {"on_submit": "thai_tax.wht.on_submit", "on_cancel": "thai_tax.wht.on_cancel"},
+}

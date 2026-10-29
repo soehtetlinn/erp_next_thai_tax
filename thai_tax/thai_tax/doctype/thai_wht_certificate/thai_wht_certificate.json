@@ -1,0 +1,248 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_rename": 1,
+ "autoname": "format:WHT-{YYYY}-{#####}",
+ "creation": "2026-10-29 08:58:29.372894",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "posting_date",
+  "column_break_1",
+  "pnd_form",
+  "condition",
+  "book_no",
+  "section_payee",
+  "supplier",
+  "payee_name",
+  "payee_tax_id",
+  "column_break_2",
+  "payee_branch",
+  "payee_address",
+  "section_items",
+  "items",
+  "total_amount",
+  "column_break_3",
+  "total_tax",
+  "section_reference",
+  "reference_doctype",
+  "reference_name",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Payment Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "\u0e20.\u0e07.\u0e14.53",
+   "fieldname": "pnd_form",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Filed On (PND Form)",
+   "options": "\u0e20.\u0e07.\u0e14.1\u0e01\n\u0e20.\u0e07.\u0e14.1\u0e01 \u0e1e\u0e34\u0e40\u0e28\u0e29\n\u0e20.\u0e07.\u0e14.2\n\u0e20.\u0e07.\u0e14.3\n\u0e20.\u0e07.\u0e14.2\u0e01\n\u0e20.\u0e07.\u0e14.3\u0e01\n\u0e20.\u0e07.\u0e14.53",
+   "reqd": 1
+  },
+  {
+   "default": "1. \u0e2b\u0e31\u0e01 \u0e13 \u0e17\u0e35\u0e48\u0e08\u0e48\u0e32\u0e22",
+   "fieldname": "condition",
+   "fieldtype": "Select",
+   "label": "Payer Condition",
+   "options": "1. \u0e2b\u0e31\u0e01 \u0e13 \u0e17\u0e35\u0e48\u0e08\u0e48\u0e32\u0e22\n2. \u0e2d\u0e2d\u0e01\u0e43\u0e2b\u0e49\u0e15\u0e25\u0e2d\u0e14\u0e44\u0e1b\n3. \u0e2d\u0e2d\u0e01\u0e43\u0e2b\u0e49\u0e04\u0e23\u0e31\u0e49\u0e07\u0e40\u0e14\u0e35\u0e22\u0e27\n4. \u0e2d\u0e37\u0e48\u0e19 \u0e46",
+   "reqd": 1
+  },
+  {
+   "description": "Only if certificates are bound in books",
+   "fieldname": "book_no",
+   "fieldtype": "Data",
+   "label": "Book No. (\u0e40\u0e25\u0e48\u0e21\u0e17\u0e35\u0e48)"
+  },
+  {
+   "fieldname": "section_payee",
+   "fieldtype": "Section Break",
+   "label": "Payee (\u0e1c\u0e39\u0e49\u0e16\u0e39\u0e01\u0e2b\u0e31\u0e01\u0e20\u0e32\u0e29\u0e35 \u0e13 \u0e17\u0e35\u0e48\u0e08\u0e48\u0e32\u0e22)"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Supplier",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "payee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Payee Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "payee_tax_id",
+   "fieldtype": "Data",
+   "label": "Payee Tax ID",
+   "length": 13,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "00000",
+   "description": "00000 = head office",
+   "fieldname": "payee_branch",
+   "fieldtype": "Data",
+   "label": "Payee Branch Code",
+   "length": 5
+  },
+  {
+   "fieldname": "payee_address",
+   "fieldtype": "Small Text",
+   "label": "Payee Address"
+  },
+  {
+   "fieldname": "section_items",
+   "fieldtype": "Section Break",
+   "label": "Income Paid and Tax Withheld"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Thai WHT Certificate Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Paid",
+   "options": "THB",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_tax",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Tax Withheld",
+   "options": "THB",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_reference",
+   "fieldtype": "Section Break",
+   "label": "Source Document"
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "label": "Reference Type",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "label": "Reference",
+   "options": "reference_doctype",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Thai WHT Certificate",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-10-29 08:58:29.372894",
+ "modified_by": "Administrator",
+ "module": "Thai Tax",
+ "name": "Thai WHT Certificate",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "search_fields": "payee_name,payee_tax_id,pnd_form",
+ "sort_field": "posting_date",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "payee_name",
+ "track_changes": 1
+}
